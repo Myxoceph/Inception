@@ -1,16 +1,16 @@
 #!/bin/bash
 
-# if [ ! -f "/var/www/wordpress/wp-config-sample.php" ]; then
-# 	echo "Wordpress not found, downloading..."
-# 	wget https://wordpress.org/latest.tar.gz -O /tmp/wordpress.tar.gz
-# 	tar -xzf /tmp/wordpress.tar.gz -C /tmp
-# 	cp -r /tmp/wordpress/* /var/www/wordpress/
-# 	rm -rf /tmp/wordpress.tar.gz /tmp/wordpress
+if [ ! -f "/var/www/wordpress/wp-config-sample.php" ]; then
+	echo "Wordpress not found, downloading..."
+	wget https://wordpress.org/latest.tar.gz -O /tmp/wordpress.tar.gz
+	tar -xzf /tmp/wordpress.tar.gz -C /tmp
+	cp -r /tmp/wordpress/* /var/www/wordpress/
+	rm -rf /tmp/wordpress.tar.gz /tmp/wordpress
 
-# 	echo "Wordpress downloaded and extracted."
-# else
-# 	echo "Wordpress already installed."
-# fi
+	echo "Wordpress downloaded and extracted."
+else
+	echo "Wordpress already installed."
+fi
 
 # config create komutuna bakilacak
 
