@@ -1,18 +1,6 @@
 #!/bin/bash
 
-if [ ! -f "/var/www/wordpress/wp-config-sample.php" ]; then
-	echo "Wordpress not found, downloading..."
-	wget https://wordpress.org/latest.tar.gz -O /tmp/wordpress.tar.gz
-	tar -xzf /tmp/wordpress.tar.gz -C /tmp
-	cp -r /tmp/wordpress/* /var/www/wordpress/
-	rm -rf /tmp/wordpress.tar.gz /tmp/wordpress
-
-	echo "Wordpress downloaded and extracted."
-else
-	echo "Wordpress already installed."
-fi
-
-# config create komutuna bakilacak
+. ./secrets/wp_credentials.txt
 
 if [ ! -f "/var/www/wordpress/wp-config.php" ]; then
 	echo "Creating wp-config.php..."
@@ -32,13 +20,6 @@ until mysql -h mariadb -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}" -e "SELECT 1" >/d
 done
 echo "MariaDB is ready."
 
-if [ ! -f "/usr/local/bin/wp" ]; then
-	echo "Downloading WP-CLI..."
-	wget https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O /tmp/wp-cli.phar
-	chmod +x /tmp/wp-cli.phar
-	mv /tmp/wp-cli.phar /usr/local/bin/wp
-fi
-
 cd /var/www/wordpress
 echo "Changed directory to $(pwd)"
 
@@ -46,7 +27,7 @@ if ! wp core is-installed --allow-root 2>/dev/null; then
 	echo "installing wordpress..."
 	wp core install \
 		--url="https://${DOMAIN_NAME}" \
-		--title="42 Inception" \
+		--title="abakirca 42 Inception" \
 		--admin_user="${WP_ADMIN_USER}" \
 		--admin_password="${WP_ADMIN_PASSWORD}" \
 		--admin_email="${WP_ADMIN_EMAIL}" \
@@ -62,9 +43,6 @@ if ! wp core is-installed --allow-root 2>/dev/null; then
 else
 	echo "Wordpress is already installed."
 fi
-
-chown -R www-data:www-data /var/www/wordpress
-chmod -R 755 /var/www/wordpress
 
 echo "Starting PHP-FPM..."
 exec php-fpm7.4 -F

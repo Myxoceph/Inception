@@ -1,5 +1,7 @@
 #!/bin/bash
 
+. ./secrets/wp_credentials.txt
+
 mkdir -p /run/mysqld
 
 chown mysql:mysql /run/mysqld
@@ -20,7 +22,7 @@ fi
 
 echo "Starting MariaDB server..."
 
-mysqld_safe --user=mysql &
+exec mysqld_safe --user=mysql
 
 until mysqladmin ping --silent; do
 	echo "Waiting for MariaDB to start..."
