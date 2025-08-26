@@ -1,4 +1,6 @@
-FROM debian:bullseye
+ARG RELEASE=bullseye
+
+FROM debian:${RELEASE}
 
 RUN apt-get update && apt-get install -y php php-mysqli php-fpm php-cli wget curl tar mariadb-client && rm -rf /var/lib/apt/lists/*
 
