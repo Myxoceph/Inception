@@ -1,4 +1,4 @@
-ARG RELEASE=bullseye
+ARG RELEASE=bookworm
 
 FROM debian:${RELEASE}
 
@@ -9,7 +9,5 @@ COPY tools/nginx.sh /nginx.sh
 RUN chmod +x /nginx.sh && /nginx.sh
 
 COPY conf/default.conf /etc/nginx/conf.d/default.conf
-
-EXPOSE 443
 
 ENTRYPOINT ["nginx", "-g", "daemon off;"]

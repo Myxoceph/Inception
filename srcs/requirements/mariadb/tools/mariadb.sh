@@ -1,40 +1,27 @@
 #!/bin/bash
 
-. ./secrets/wp_credentials.txt
+set -e
 
-mkdir -p /run/mysqld
-
-chown mysql:mysql /run/mysqld
+. /run/secrets/db_credentials.txt
 
 if [ ! -d "/var/lib/mysql/mysql" ]; then
 	echo "Initializing MariaDB database..."
-	mysql_install_db --user=mysql --datadir=/var/lib/mysql
+	mariadb-install-db --user=mysql --datadir=/var/lib/mysql
 fi
 
-DATABASE_EXIST=false
+# DATABASE_EXIST=false
 
-if [ -d "/var/lib/mysql/${MYSQL_DATABASE}" ]; then
-	echo "Database ${MYSQL_DATABASE} already exists."
-	DATABASE_EXIST=true
-else
-	echo "Database ${MYSQL_DATABASE} does not exist. Creating..."
-fi
+# if [ -d "/var/lib/mysql/${MYSQL_DATABASE}" ]; then
+# 	echo "Database ${MYSQL_DATABASE} already exists."
+# 	DATABASE_EXIST=true
+# else
+# 	echo "Database ${MYSQL_DATABASE} does not exist. Creating..."
+# fi
 
-echo "Starting MariaDB server..."
+# if [ "$DATABASE_EXIST" = false ]; then
+# 	echo "Setting up database..."
 
-exec mysqld_safe --user=mysql
-
-until mysqladmin ping --silent; do
-	echo "Waiting for MariaDB to start..."
-	sleep 2
-done
-
-echo "MariaDB server is up and running."
-
-if [ "$DATABASE_EXIST" = false ]; then
-	echo "Setting up database..."
-
-	mysql -u root <<-EOF
+	cat <<EOF > /tmp/init.sql
 CREATE DATABASE IF NOT EXISTS ${MYSQL_DATABASE};
 CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD}';
 GRANT ALL PRIVILEGES ON ${MYSQL_DATABASE}.* TO '${MYSQL_USER}'@'%';
@@ -44,13 +31,8 @@ ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';
 FLUSH PRIVILEGES;
 EOF
 
-	echo "Database setup complete."
-fi
-
-echo "Stopping temporary MariaDB server..."
-
-mysqladmin -u root -p"${MYSQL_ROOT_PASSWORD}" shutdown
+# fi
 
 echo "Starting MariaDB server in foreground..."
 
-exec mysqld_safe --user=mysql
+exec mysqld_safe --user=mysql --init-file=/tmp/init.sql

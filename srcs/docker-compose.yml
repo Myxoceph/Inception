@@ -6,6 +6,7 @@ services:
     env_file: .env
     volumes: 
       - /home/ahmet/data/mariadb:/var/lib/mysql
+      - ../secrets/db_credentials.txt:/run/secrets/db_credentials.txt:ro
     networks:
       - inception
   wordpress:
@@ -15,6 +16,8 @@ services:
     env_file: .env
     volumes: 
       - /home/ahmet/data/wordpress:/var/www/wordpress
+      - ../secrets/wp_credentials.txt:/run/secrets/wp_credentials.txt:ro
+      - ../secrets/db_credentials.txt:/run/secrets/db_credentials.txt:ro
     networks:
       - inception
     depends_on:

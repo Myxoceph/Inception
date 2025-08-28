@@ -1,7 +1,8 @@
 all:up
 
 up: setup
-	docker compose -f srcs/docker-compose.yml up -d --build
+	docker compose -f srcs/docker-compose.yml build --no-cache
+	docker compose -f srcs/docker-compose.yml up -d
 
 down:
 	docker compose -f srcs/docker-compose.yml down
