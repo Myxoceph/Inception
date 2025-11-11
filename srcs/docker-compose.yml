@@ -1,40 +1,102 @@
+# Docker Compose file that defines and orchestrates multiple services (containers)
 services:
+  # MariaDB database service definition
   mariadb:
+    # build: Build image from Dockerfile instead of pulling from registry
+    # ./requirements/mariadb: Context path where Dockerfile is located
     build: ./requirements/mariadb
+    # container_name: Explicitly name the container (instead of auto-generated name)
+    # This makes it easier to reference and manage the container
     container_name: mariadb
+    # restart: Container restart policy
+    # unless-stopped: Always restart container unless explicitly stopped by user
+    # This ensures service availability after crashes or system reboots
     restart: unless-stopped
+    # env_file: Load environment variables from external file
+    # .env: File containing environment variables (e.g., MYSQL_ROOT_PASSWORD)
     env_file: .env
+    # volumes: Mount host directories/files into container for persistent storage
     volumes: 
+      # Bind mount: host_path:container_path
+      # /home/ahmet/data/mariadb: Host directory for persistent database storage
+      # /var/lib/mysql: Container directory where MariaDB stores database files
+      # This ensures database data survives container restarts/deletions
       - /home/ahmet/data/mariadb:/var/lib/mysql
+      # Mount database credentials file into container
+      # ../secrets/db_credentials.txt: Host file containing sensitive DB credentials
+      # /run/secrets/db_credentials.txt: Container path where file is accessible
+      # :ro: Read-only mount - container cannot modify this file
       - ../secrets/db_credentials.txt:/run/secrets/db_credentials.txt:ro
+    # networks: Connect container to specified network(s)
+    # inception: Custom bridge network for inter-container communication
     networks:
       - inception
+
+  # WordPress application service definition
   wordpress:
+    # Build WordPress image from custom Dockerfile
     build: ./requirements/wordpress
+    # Name the container 'wordpress' for easy reference
     container_name: wordpress
+    # Restart policy: always restart unless manually stopped
     restart: unless-stopped
+    # Load environment variables from .env file
     env_file: .env
+    # Mount volumes for persistent WordPress data and credentials
     volumes: 
+      # Mount host directory for WordPress files (themes, plugins, uploads)
+      # /home/ahmet/data/wordpress: Host directory
+      # /var/www/wordpress: Container directory where WordPress is installed
       - /home/ahmet/data/wordpress:/var/www/wordpress
+      # Mount WordPress admin credentials (read-only)
+      # Contains WP_ADMIN_USER, WP_ADMIN_PASSWORD, etc.
       - ../secrets/wp_credentials.txt:/run/secrets/wp_credentials.txt:ro
+      # Mount database credentials (read-only)
+      # WordPress needs these to connect to MariaDB
       - ../secrets/db_credentials.txt:/run/secrets/db_credentials.txt:ro
+    # Connect to the inception network
     networks:
       - inception
+    # depends_on: Define startup order dependencies
+    # mariadb: WordPress requires MariaDB to be started first
+    # Note: This ensures startup order but not that MariaDB is "ready"
     depends_on:
       - mariadb
+
+  # Nginx web server service definition (reverse proxy and SSL termination)
   nginx:
+    # Build Nginx image from custom Dockerfile
     build: ./requirements/nginx
+    # Name the container 'nginx'
     container_name: nginx
+    # Restart policy: always restart unless manually stopped
     restart: unless-stopped
+    # Load environment variables from .env file
     env_file: .env
+    # ports: Map host ports to container ports
+    # "443:443": Map host port 443 to container port 443
+    # Left side (443): Host port - accessible from outside
+    # Right side (443): Container port - where nginx listens inside container
+    # This exposes HTTPS port to the host machine
     ports:
       - "443:443"
+    # Mount WordPress files so nginx can serve static content
     volumes: 
+      # Same WordPress directory that wordpress container uses
+      # nginx needs access to serve PHP files and static assets
       - /home/ahmet/data/wordpress:/var/www/wordpress
+    # Connect to the inception network to communicate with wordpress container
     networks:
       - inception
+    # depends_on: nginx requires wordpress to be started first
+    # nginx acts as reverse proxy forwarding PHP requests to wordpress
     depends_on:
       - wordpress
 
+# networks section: Define custom networks for container communication
 networks:
+  # inception: Custom bridge network name
+  # Empty configuration uses default bridge network settings
+  # Containers on this network can communicate using container names as hostnames
+  # Provides network isolation from other Docker networks
   inception:
