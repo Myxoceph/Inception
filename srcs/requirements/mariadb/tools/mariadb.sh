@@ -9,17 +9,7 @@ if [ ! -d "/var/lib/mysql/mysql" ]; then
 	mariadb-install-db --user=mysql --datadir=/var/lib/mysql
 fi
 
-# DATABASE_EXIST=false
-
-# if [ -d "/var/lib/mysql/${MYSQL_DATABASE}" ]; then
-# 	echo "Database ${MYSQL_DATABASE} already exists."
-# 	DATABASE_EXIST=true
-# else
-# 	echo "Database ${MYSQL_DATABASE} does not exist. Creating..."
-# fi
-
-# if [ "$DATABASE_EXIST" = false ]; then
-# 	echo "Setting up database..."
+sleep 5
 
 	cat <<EOF > /tmp/init.sql
 CREATE DATABASE IF NOT EXISTS ${MYSQL_DATABASE};
@@ -31,7 +21,7 @@ ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';
 FLUSH PRIVILEGES;
 EOF
 
-# fi
+echo "MariaDB is ready"
 
 echo "Starting MariaDB server in foreground..."
 

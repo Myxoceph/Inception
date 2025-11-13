@@ -24,14 +24,14 @@ if [ ! -f "/var/www/wordpress/wp-config.php" ]; then
 	echo "wp-config.php created successfully"
 fi
 
-echo "Waiting for MariaDB to be ready"
+echo "Waiting MariaDB to be ready."
 
-until mysql -h mariadb -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}" -e "SELECT 1" >/dev/null 2>&1; do
-	echo "MariaDB not ready yet"
+until mysqladmin ping -h mariadb -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}" --silent; do
+	echo "MariaDB not ready yet."
 	sleep 3
 done
 
-echo "MariaDB is ready"
+echo "MariaDB connected."
 
 if ! wp core is-installed --allow-root 2>/dev/null; then
 	echo "installing wordpress..."
@@ -53,6 +53,8 @@ if ! wp core is-installed --allow-root 2>/dev/null; then
 else
 	echo "Wordpress is already installed."
 fi
+
+chown -R www-data:www-data /var/www/wordpress
 
 echo "Starting PHP-FPM"
 exec php-fpm8.2 -F

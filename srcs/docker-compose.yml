@@ -1,21 +1,23 @@
 services:
   mariadb:
     build: ./requirements/mariadb
+    image: mariadb
     container_name: mariadb
     restart: unless-stopped
     env_file: .env
     volumes: 
-      - /home/ahmet/data/mariadb:/var/lib/mysql
+      - mariadb_data:/var/lib/mysql
       - ../secrets/db_credentials.txt:/run/secrets/db_credentials.txt:ro
     networks:
       - inception
   wordpress:
     build: ./requirements/wordpress
+    image: wordpress
     container_name: wordpress
     restart: unless-stopped
     env_file: .env
     volumes: 
-      - /home/ahmet/data/wordpress:/var/www/wordpress
+      - wordpress_data:/var/www/wordpress
       - ../secrets/wp_credentials.txt:/run/secrets/wp_credentials.txt:ro
       - ../secrets/db_credentials.txt:/run/secrets/db_credentials.txt:ro
     networks:
@@ -24,17 +26,32 @@ services:
       - mariadb
   nginx:
     build: ./requirements/nginx
+    image: nginx
     container_name: nginx
     restart: unless-stopped
     env_file: .env
     ports:
       - "443:443"
     volumes: 
-      - /home/ahmet/data/wordpress:/var/www/wordpress
+      - wordpress_data:/var/www/wordpress
     networks:
       - inception
     depends_on:
       - wordpress
+
+volumes:
+  mariadb_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/abakirca/data/mariadb
+      o: bind
+  wordpress_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/abakirca/data/wordpress
+      o: bind
 
 networks:
   inception:

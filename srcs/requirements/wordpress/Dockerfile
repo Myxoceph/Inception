@@ -3,8 +3,8 @@ ARG RELEASE=bookworm
 FROM debian:${RELEASE}
 
 RUN apt-get update && apt-get install -y \
-   php php-fpm php-cli php-mysqli \
-   wget curl tar mariadb-client \
+   php php-fpm php-cli sendmail mariadb-client \
+   wget curl tar php-mysqli \
    && rm -rf /var/lib/apt/lists/*
 
 RUN sed -i 's/listen =.*/listen = 0.0.0.0:9000/g' /etc/php/8.2/fpm/pool.d/www.conf
@@ -14,7 +14,6 @@ RUN mkdir -p /usr/src/wordpress /var/www/wordpress /run/php \
    && tar -xzf /tmp/wordpress.tar.gz -C /usr/src/ \
    && rm -f /tmp/wordpress.tar.gz
 
-# Install WP-CLI
 RUN curl -o /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
    && chmod +x /usr/local/bin/wp
 
